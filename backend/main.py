@@ -16,12 +16,11 @@ app = FastAPI(title="User Manager API")
 # CORS для фронтенда
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://user-manager-4vdq.onrender.com:8080"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # Dependency для БД
 def get_db():
