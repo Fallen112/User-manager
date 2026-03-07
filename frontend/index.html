@@ -51,7 +51,8 @@
             <section class="users-list">
                 <h2>📋 Список пользователей</h2>
                 <div id="usersContainer">
-                    <p class="loading">Загрузка...</p>
+                    <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+                    <!-- Карточки пользователей будут добавляться сюда -->
                 </div>
             </section>
         </div>
@@ -77,6 +78,16 @@
                 <div class="form-group">
                     <label for="editAge">Возраст</label>
                     <input type="number" id="editAge" required min="18" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Роль *</label>
+                    <select id="role" name="role" required>
+                        <option value="user">User</option>
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <small class="hint">Выберите роль пользователя</small>
                 </div>
 
                 <div class="form-group checkbox">

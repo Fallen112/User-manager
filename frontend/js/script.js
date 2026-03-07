@@ -15,10 +15,22 @@ function showNotification(message, type = 'success') {
 // Загрузить всех пользователей
 async function loadUsers() {
     const container = document.getElementById('usersContainer');
+    const spinner = document.getElementById('loadingSpinner');
+
+    spinner.style.display = 'block';
+    container.innerHTML = '';
+    container.appendChild(spinner);
 
     try {
-        const response = await fetch(`${API_URL}/users/`);
+        const response = await fetch(`${API_URL}/users/`, {
+            headers: {
+                'X-User-Role': 'admin'  // временно для теста ролей
+            }
+        });
         const users = await response.json();
+
+        spinner.style.display = 'none';
+        container.innerHTML = '';
 
         if (users.length === 0) {
             container.innerHTML = '<p class="loading">Нет пользователей</p>';
@@ -28,9 +40,10 @@ async function loadUsers() {
         container.innerHTML = users.map(user => `
             <div class="user-card ${user.is_active ? '' : 'inactive'}" data-id="${user.id}">
                 <div class="user-info">
-                    <div class="name">${user.name}</div>
+                    <div class="name">${user.username}</div>
                     <div class="email">📧 ${user.email}</div>
                     <div class="age">🎂 ${user.age} лет</div>
+                    <div class="role">🎭 Роль: ${user.role}</div>
                     <div class="date">📅 ${new Date(user.created_at).toLocaleDateString()}</div>
                     <div class="status">${user.is_active ? '✅ Активен' : '❌ Неактивен'}</div>
                 </div>
@@ -42,8 +55,9 @@ async function loadUsers() {
         `).join('');
 
     } catch (error) {
-        console.error('Error loading users:', error);
+        spinner.style.display = 'none';
         container.innerHTML = '<p class="loading">Ошибка загрузки</p>';
+        console.error('Error loading users:', error);
     }
 }
 
@@ -52,10 +66,11 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const formData = {
-        name: document.getElementById('name').value,
+        username: document.getElementById('username').value,
         email: document.getElementById('email').value,
         age: parseInt(document.getElementById('age').value),
-        is_active: document.getElementById('is_active').checked
+        role: document.getElementById('role').value,
+        is_active: true
     };
 
     try {
@@ -63,6 +78,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-User-Role': 'admin'  // временно для теста ролей
             },
             body: JSON.stringify(formData)
         });
@@ -88,7 +104,10 @@ async function deleteUser(id) {
 
     try {
         const response = await fetch(`${API_URL}/users/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'X-User-Role': 'admin'  // временно для теста ролей
+            }
         });
 
         if (!response.ok) {
@@ -106,13 +125,18 @@ async function deleteUser(id) {
 // Открыть модальное окно редактирования
 async function openEditModal(id) {
     try {
-        const response = await fetch(`${API_URL}/users/${id}`);
+        const response = await fetch(`${API_URL}/users/${id}`, {
+            headers: {
+                'X-User-Role': 'admin'  // временно для теста ролей
+            }
+        });
         const user = await response.json();
 
         document.getElementById('editId').value = user.id;
-        document.getElementById('editName').value = user.name;
+        document.getElementById('editName').value = user.username;
         document.getElementById('editEmail').value = user.email;
         document.getElementById('editAge').value = user.age;
+        document.getElementById('editRole').value = user.role;
         document.getElementById('editIsActive').checked = user.is_active;
 
         document.getElementById('editModal').style.display = 'block';
@@ -128,9 +152,10 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
 
     const id = document.getElementById('editId').value;
     const formData = {
-        name: document.getElementById('editName').value,
+        username: document.getElementById('editName').value,
         email: document.getElementById('editEmail').value,
         age: parseInt(document.getElementById('editAge').value),
+        role: document.getElementById('editRole').value,
         is_active: document.getElementById('editIsActive').checked
     };
 
@@ -139,6 +164,7 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'X-User-Role': 'admin'  // временно для теста ролей
             },
             body: JSON.stringify(formData)
         });
