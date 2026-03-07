@@ -66,7 +66,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const formData = {
-        username: document.getElementById('username').value,
+        username: document.getElementById('name').value,
         email: document.getElementById('email').value,
         age: parseInt(document.getElementById('age').value),
         role: document.getElementById('role').value,
