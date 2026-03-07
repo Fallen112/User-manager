@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Manager - QA Training</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>👥 User Manager</h1>
+        <p>Тестовый стенд для QA-инженеров</p>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Форма создания пользователя -->
+            <section class="create-form">
+                <h2>➕ Создать пользователя</h2>
+                <form id="userForm">
+                    <div class="form-group">
+                        <label for="name">Имя *</label>
+                        <input type="text" id="name" name="name" required minlength="2" maxlength="50">
+                        <small class="hint">От 2 до 50 символов</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                        <small class="hint">Должен быть уникальным</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Возраст *</label>
+                        <input type="number" id="age" name="age" required min="18" max="100">
+                        <small class="hint">От 18 до 100 лет</small>
+                    </div>
+
+                    <div class="form-group checkbox">
+                        <label>
+                            <input type="checkbox" id="is_active" name="is_active" checked>
+                            Активен
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </form>
+            </section>
+
+            <!-- Список пользователей -->
+            <section class="users-list">
+                <h2>📋 Список пользователей</h2>
+                <div id="usersContainer">
+                    <p class="loading">Загрузка...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>✏️ Редактировать пользователя</h2>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editName">Имя</label>
+                    <input type="text" id="editName" required minlength="2" maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" id="editEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editAge">Возраст</label>
+                    <input type="number" id="editAge" required min="18" max="100">
+                </div>
+
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" id="editIsActive">
+                        Активен
+                    </label>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

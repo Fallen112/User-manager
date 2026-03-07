@@ -1,0 +1,36 @@
+# Виртуальное окружение
+.venv/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+
+# База данных
+*.db
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Логи и временные файлы
+*.log
+*.pot
+*.pid
+*.seed
+*.pid.lock
+
+# Дистрибутивы
+dist/
+build/
+*.egg-info/
+
+# Фронтенд (опционально)
+frontend/node_modules/
+frontend/.env
