@@ -78,7 +78,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-User-Role': 'admin'  // временно для теста ролей
+                'X-User-Role': 'admin'
             },
             body: JSON.stringify(formData)
         });
@@ -89,12 +89,13 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         }
 
         document.getElementById('userForm').reset();
-        document.getElementById('is_active').checked = true;
         await loadUsers();
         showNotification('Пользователь успешно создан!', 'success');
 
     } catch (error) {
+        // ✅ ИСПРАВЛЕНО: теперь показываем сообщение, а не объект
         showNotification(error.message, 'error');
+        console.error('Error creating user:', error);
     }
 });
 
