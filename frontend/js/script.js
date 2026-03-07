@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://user-manager-backend.onrender.com';
 
 // Показать уведомление
 function showNotification(message, type = 'success') {
