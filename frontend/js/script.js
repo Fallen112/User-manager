@@ -1,4 +1,4 @@
-const API_URL = 'https://user-manager-backend.onrender.com';
+const API_URL = 'https://user-manager-backend-6ry1.onrender.com';
 
 // Показать уведомление
 function showNotification(message, type = 'success') {
