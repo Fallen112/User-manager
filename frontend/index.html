@@ -15,37 +15,46 @@
     <main>
         <div class="container">
             <!-- Форма создания пользователя -->
-            <section class="create-form">
-                <h2>➕ Создать пользователя</h2>
-                <form id="userForm">
-                    <div class="form-group">
-                        <label for="name">Имя *</label>
-                        <input type="text" id="name" name="name" required minlength="2" maxlength="50">
-                        <small class="hint">От 2 до 50 символов</small>
-                    </div>
+<section class="create-form">
+    <h2>➕ Создать пользователя</h2>
+    <form id="userForm">
+        <div class="form-group">
+            <label for="username">Имя *</label>
+            <input type="text" id="username" name="username" required minlength="3" maxlength="50">
+            <small class="hint">От 2 до 50 символов</small>
+        </div>
 
-                    <div class="form-group">
-                        <label for="email">Email *</label>
-                        <input type="email" id="email" name="email" required>
-                        <small class="hint">Должен быть уникальным</small>
-                    </div>
+        <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required>
+            <small class="hint">Должен быть уникальным</small>
+        </div>
 
-                    <div class="form-group">
-                        <label for="age">Возраст *</label>
-                        <input type="number" id="age" name="age" required min="18" max="100">
-                        <small class="hint">От 18 до 100 лет</small>
-                    </div>
+        <div class="form-group">
+            <label for="age">Возраст *</label>
+            <input type="number" id="age" name="age" required min="18" max="100">
+            <small class="hint">От 18 до 100 лет</small>
+        </div>
 
-                    <div class="form-group checkbox">
-                        <label>
-                            <input type="checkbox" id="is_active" name="is_active" checked>
-                            Активен
-                        </label>
-                    </div>
+        <div class="form-group">
+            <label for="role">Роль *</label>
+            <select id="role" name="role" required>
+                <option value="user">User</option>
+                <option value="editor">Editor</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
 
-                    <button type="submit" class="btn btn-primary">Создать</button>
-                </form>
-            </section>
+        <div class="form-group checkbox">
+            <label>
+                <input type="checkbox" id="is_active" name="is_active" checked>
+                Активен
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Создать</button>
+    </form>
+</section>
 
             <!-- Список пользователей -->
             <section class="users-list">

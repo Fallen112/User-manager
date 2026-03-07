@@ -1,6 +1,5 @@
 const API_URL = 'https://user-manager-backend-6ry1.onrender.com';
 
-// Показать уведомление
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -12,7 +11,6 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Загрузить всех пользователей
 async function loadUsers() {
     const container = document.getElementById('usersContainer');
     const spinner = document.getElementById('loadingSpinner');
@@ -24,7 +22,7 @@ async function loadUsers() {
     try {
         const response = await fetch(`${API_URL}/users/`, {
             headers: {
-                'X-User-Role': 'admin'  // временно для теста ролей
+                'X-User-Role': 'admin'
             }
         });
         const users = await response.json();
@@ -61,12 +59,11 @@ async function loadUsers() {
     }
 }
 
-// Создать пользователя
 document.getElementById('userForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const formData = {
-        username: document.getElementById('name').value,
+        username: document.getElementById('username').value,
         email: document.getElementById('email').value,
         age: parseInt(document.getElementById('age').value),
         role: document.getElementById('role').value,
@@ -89,17 +86,16 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         }
 
         document.getElementById('userForm').reset();
+        document.getElementById('is_active').checked = true;
         await loadUsers();
         showNotification('Пользователь успешно создан!', 'success');
 
     } catch (error) {
-        // ✅ ИСПРАВЛЕНО: теперь показываем сообщение, а не объект
         showNotification(error.message, 'error');
         console.error('Error creating user:', error);
     }
 });
 
-// Удалить пользователя
 async function deleteUser(id) {
     if (!confirm('Удалить пользователя?')) return;
 
@@ -107,7 +103,7 @@ async function deleteUser(id) {
         const response = await fetch(`${API_URL}/users/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-User-Role': 'admin'  // временно для теста ролей
+                'X-User-Role': 'admin'
             }
         });
 
@@ -123,12 +119,11 @@ async function deleteUser(id) {
     }
 }
 
-// Открыть модальное окно редактирования
 async function openEditModal(id) {
     try {
         const response = await fetch(`${API_URL}/users/${id}`, {
             headers: {
-                'X-User-Role': 'admin'  // временно для теста ролей
+                'X-User-Role': 'admin'
             }
         });
         const user = await response.json();
@@ -147,7 +142,6 @@ async function openEditModal(id) {
     }
 }
 
-// Обновить пользователя
 document.getElementById('editForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -165,7 +159,7 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-User-Role': 'admin'  // временно для теста ролей
+                'X-User-Role': 'admin'
             },
             body: JSON.stringify(formData)
         });
@@ -184,7 +178,6 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Закрыть модальное окно
 document.querySelector('.close').addEventListener('click', () => {
     document.getElementById('editModal').style.display = 'none';
 });
@@ -200,5 +193,4 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Загрузить пользователей при старте
 loadUsers();
