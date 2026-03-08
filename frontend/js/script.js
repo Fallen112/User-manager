@@ -82,7 +82,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Ошибка создания');
+            throw new Error(JSON.stringify(error));
         }
 
         document.getElementById('userForm').reset();
@@ -91,8 +91,26 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         showNotification('Пользователь успешно создан!', 'success');
 
     } catch (error) {
-        showNotification(error.message, 'error');
-        console.error('Error creating user:', error);
+        let errorMessage = 'Ошибка создания';
+
+        try {
+            // Пробуем получить детали ошибки от сервера
+            const errorData = JSON.parse(error.message);
+            if (errorData.detail) {
+                if (typeof errorData.detail === 'string') {
+                    errorMessage = errorData.detail;
+                } else if (Array.isArray(errorData.detail)) {
+                    errorMessage = errorData.detail.map(err =>
+                        `${err.loc.join('.')}: ${err.msg}`
+                    ).join(', ');
+                }
+            }
+        } catch {
+            errorMessage = error.message || 'Неизвестная ошибка';
+        }
+
+        showNotification(errorMessage, 'error');
+        console.error('Full error:', error);
     }
 });
 
