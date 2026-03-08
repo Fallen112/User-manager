@@ -1,220 +1,123 @@
-const API_URL = 'https://user-manager-backend-6ry1.onrender.com';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Manager - QA Training</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>👥 User Manager</h1>
+        <p>Тестовый стенд для QA-инженеров</p>
+    </header>
 
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
+    <main>
+        <div class="container">
+            <!-- Форма создания пользователя -->
+            <section class="create-form">
+                <h2>➕ Создать пользователя</h2>
+                <form id="userForm">
+                    <div class="form-group">
+                        <label for="username">Имя *</label>
+                        <input type="text" id="username" name="username" required minlength="3" maxlength="50">
+                        <small class="hint">От 3 до 50 символов</small>
+                    </div>
 
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                        <small class="hint">Должен быть уникальным</small>
+                    </div>
 
-async function loadUsers() {
-    const container = document.getElementById('usersContainer');
-    const spinner = document.getElementById('loadingSpinner');
+                    <div class="form-group">
+                        <label for="password">Пароль *</label>
+                        <input type="password" id="password" name="password" required minlength="6">
+                        <small class="hint">Минимум 6 символов</small>
+                    </div>
 
-    spinner.style.display = 'block';
-    container.innerHTML = '';
-    container.appendChild(spinner);
+                    <div class="form-group">
+                        <label for="age">Возраст *</label>
+                        <input type="number" id="age" name="age" required min="18" max="100">
+                        <small class="hint">От 18 до 100 лет</small>
+                    </div>
 
-    try {
-        const response = await fetch(`${API_URL}/users/`, {
-            headers: {
-                'X-User-Role': 'admin'
-            }
-        });
-        const users = await response.json();
+                    <div class="form-group">
+                        <label for="role">Роль *</label>
+                        <select id="role" name="role" required>
+                            <option value="user">User</option>
+                            <option value="editor">Editor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
 
-        spinner.style.display = 'none';
-        container.innerHTML = '';
+                    <div class="form-group checkbox">
+                        <label>
+                            <input type="checkbox" id="is_active" name="is_active" checked>
+                            Активен
+                        </label>
+                    </div>
 
-        if (users.length === 0) {
-            container.innerHTML = '<p class="loading">Нет пользователей</p>';
-            return;
-        }
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </form>
+            </section>
 
-        container.innerHTML = users.map(user => `
-            <div class="user-card ${user.is_active ? '' : 'inactive'}" data-id="${user.id}">
-                <div class="user-info">
-                    <div class="name">${user.username}</div>
-                    <div class="email">📧 ${user.email}</div>
-                    <div class="age">🎂 ${user.age} лет</div>
-                    <div class="role">🎭 Роль: ${user.role}</div>
-                    <div class="date">📅 ${new Date(user.created_at).toLocaleDateString()}</div>
-                    <div class="status">${user.is_active ? '✅ Активен' : '❌ Неактивен'}</div>
+            <!-- Список пользователей -->
+            <section class="users-list">
+                <h2>📋 Список пользователей</h2>
+                <div id="usersContainer">
+                    <div id="loadingSpinner" class="spinner" style="display: none;"></div>
                 </div>
-                <div class="user-actions">
-                    <button class="btn btn-primary edit-btn" onclick="openEditModal(${user.id})">✏️ Edit</button>
-                    <button class="btn btn-danger delete-btn" onclick="deleteUser(${user.id})">🗑️ Delete</button>
+            </section>
+        </div>
+    </main>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>✏️ Редактировать пользователя</h2>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editName">Имя</label>
+                    <input type="text" id="editName" required minlength="3" maxlength="50">
                 </div>
-            </div>
-        `).join('');
 
-    } catch (error) {
-        spinner.style.display = 'none';
-        container.innerHTML = '<p class="loading">Ошибка загрузки</p>';
-        console.error('Error loading users:', error);
-    }
-}
+                <div class="form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" id="editEmail" required>
+                </div>
 
-document.getElementById('userForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+                <div class="form-group">
+                    <label for="editAge">Возраст</label>
+                    <input type="number" id="editAge" required min="18" max="100">
+                </div>
 
-    const formData = {
-        username: document.getElementById('username').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value, // НОВОЕ ПОЛЕ
-        age: parseInt(document.getElementById('age').value),
-        role: document.getElementById('role').value,
-        is_active: true
-    };
+                <div class="form-group">
+                    <label for="editRole">Роль</label>
+                    <select id="editRole" required>
+                        <option value="user">User</option>
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
 
-    try {
-        const response = await fetch(`${API_URL}/users/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Role': 'admin'
-            },
-            body: JSON.stringify(formData)
-        });
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" id="editIsActive">
+                        Активен
+                    </label>
+                </div>
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(JSON.stringify(error));
-        }
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        document.getElementById('userForm').reset();
-        document.getElementById('is_active').checked = true;
-        await loadUsers();
-        showNotification('Пользователь успешно создан!', 'success');
-
-    } catch (error) {
-        console.error('Полная ошибка:', error);
-        console.error('Сообщение ошибки:', error.message);
-        
-        let errorMessage = 'Ошибка создания';
-        
-        try {
-            const errorData = JSON.parse(error.message);
-            console.error('Распарсенные данные:', errorData);
-            
-            if (errorData.detail) {
-                if (typeof errorData.detail === 'string') {
-                    errorMessage = errorData.detail;
-                } else if (Array.isArray(errorData.detail)) {
-                    errorMessage = errorData.detail.map(err => 
-                        `${err.loc.join('.')}: ${err.msg}`
-                    ).join(', ');
-                }
-            } else {
-                errorMessage = JSON.stringify(errorData);
-            }
-        } catch {
-            errorMessage = error.message || 'Неизвестная ошибка';
-        }
-        
-        showNotification(errorMessage, 'error');
-    }
-});
-
-async function deleteUser(id) {
-    if (!confirm('Удалить пользователя?')) return;
-
-    try {
-        const response = await fetch(`${API_URL}/users/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-User-Role': 'admin'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Ошибка удаления');
-        }
-
-        await loadUsers();
-        showNotification('Пользователь удалён', 'success');
-
-    } catch (error) {
-        showNotification(error.message, 'error');
-    }
-}
-
-async function openEditModal(id) {
-    try {
-        const response = await fetch(`${API_URL}/users/${id}`, {
-            headers: {
-                'X-User-Role': 'admin'
-            }
-        });
-        const user = await response.json();
-
-        document.getElementById('editId').value = user.id;
-        document.getElementById('editName').value = user.username;
-        document.getElementById('editEmail').value = user.email;
-        document.getElementById('editAge').value = user.age;
-        document.getElementById('editRole').value = user.role;
-        document.getElementById('editIsActive').checked = user.is_active;
-
-        document.getElementById('editModal').style.display = 'block';
-
-    } catch (error) {
-        showNotification('Ошибка загрузки данных', 'error');
-    }
-}
-
-document.getElementById('editForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const id = document.getElementById('editId').value;
-    const formData = {
-        username: document.getElementById('editName').value,
-        email: document.getElementById('editEmail').value,
-        age: parseInt(document.getElementById('editAge').value),
-        role: document.getElementById('editRole').value,
-        is_active: document.getElementById('editIsActive').checked
-    };
-
-    try {
-        const response = await fetch(`${API_URL}/users/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-User-Role': 'admin'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Ошибка обновления');
-        }
-
-        document.getElementById('editModal').style.display = 'none';
-        await loadUsers();
-        showNotification('Пользователь обновлён', 'success');
-
-    } catch (error) {
-        showNotification(error.message, 'error');
-    }
-});
-
-document.querySelector('.close').addEventListener('click', () => {
-    document.getElementById('editModal').style.display = 'none';
-});
-
-document.getElementById('cancelEdit').addEventListener('click', () => {
-    document.getElementById('editModal').style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    const modal = document.getElementById('editModal');
-    if (e.target === modal) {
-        modal.style.display = 'none';
-    }
-});
-
-loadUsers();
+    <script src="js/script.js"></script>
+</body>
+</html>
