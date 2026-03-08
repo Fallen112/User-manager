@@ -91,26 +91,27 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         showNotification('Пользователь успешно создан!', 'success');
 
     } catch (error) {
+        console.error('Полная ошибка:', error);
+        console.error('Сообщение ошибки:', error.message);
+
         let errorMessage = 'Ошибка создания';
 
         try {
-            // Пробуем получить детали ошибки от сервера
+            // Пробуем распарсить error.message
             const errorData = JSON.parse(error.message);
+            console.error('Распарсенные данные:', errorData);
+
             if (errorData.detail) {
-                if (typeof errorData.detail === 'string') {
-                    errorMessage = errorData.detail;
-                } else if (Array.isArray(errorData.detail)) {
-                    errorMessage = errorData.detail.map(err =>
-                        `${err.loc.join('.')}: ${err.msg}`
-                    ).join(', ');
-                }
+                errorMessage = errorData.detail;
+            } else {
+                errorMessage = JSON.stringify(errorData);
             }
         } catch {
+            // Если не распарсилось, показываем как есть
             errorMessage = error.message || 'Неизвестная ошибка';
         }
 
         showNotification(errorMessage, 'error');
-        console.error('Full error:', error);
     }
 });
 
