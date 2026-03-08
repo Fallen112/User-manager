@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import uvicorn
@@ -13,12 +14,12 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="User Manager API")
 
-# --- Настройка CORS: должно быть ПЕРВЫМ middleware! ---
+# --- Настройка CORS (должна быть первой) ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://user-manager-4vdq.onrender.com",  # Твой фронтенд
-        "http://localhost:8080"
+        "http://localhost:8080"  # Локальная разработка
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -26,29 +27,29 @@ app.add_middleware(
 )
 
 
-# ------------------------------------------------------
-
 # --- Middleware для гарантированного добавления CORS-заголовков в ЛЮБОЙ ответ ---
 @app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    """Добавляет CORS-заголовки к ответу, даже если произошла ошибка."""
+async def force_cors_headers(request: Request, call_next):
+    """
+    Этот middleware гарантирует, что даже при ошибках сервера
+    в ответе будут правильные CORS-заголовки.
+    """
     try:
         response = await call_next(request)
     except Exception as e:
-        # Если внутри сервера произошла необработанная ошибка,
-        # создаём свой ответ с кодом 500, но с CORS-заголовками.
+        # Если сервер упал с необработанной ошибкой
         print(f"!!! Необработанная ошибка: {e}")
         response = JSONResponse(
             status_code=500,
             content={"detail": f"Internal server error: {str(e)}"}
         )
-    # ВАЖНО: добавляем заголовки к ответу (как к успешному, так и к ошибочному)
+    # Добавляем CORS-заголовки к ЛЮБОМУ ответу
     response.headers["Access-Control-Allow-Origin"] = "https://user-manager-4vdq.onrender.com"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
 
-# --------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 def get_db():
     db = SessionLocal()
@@ -61,12 +62,14 @@ def get_db():
 # 📌 Создать пользователя (доступно всем)
 @app.post("/users/", response_model=schemas.UserResponse, status_code=201)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # Проверяем, нет ли уже пользователя с таким email или username
     db_user = db.query(models.User).filter(
         (models.User.email == user.email) | (models.User.username == user.username)
     ).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email or username already registered")
 
+    # Создаём нового пользователя
     db_user = models.User(
         username=user.username,
         email=user.email,
@@ -115,11 +118,14 @@ def update_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Получаем только те поля, которые есть в запросе
     update_data = user_update.dict(exclude_unset=True)
 
+    # Преобразуем роль из Enum в строку, если она есть
     if 'role' in update_data and update_data['role'] is not None:
         update_data['role'] = update_data['role'].value
 
+    # Обновляем только переданные поля
     for field, value in update_data.items():
         setattr(user, field, value)
 
