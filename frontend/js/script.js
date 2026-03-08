@@ -65,6 +65,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
     const formData = {
         username: document.getElementById('username').value,
         email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
         age: parseInt(document.getElementById('age').value),
         role: document.getElementById('role').value,
         is_active: true
@@ -97,17 +98,21 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
         let errorMessage = 'Ошибка создания';
 
         try {
-            // Пробуем распарсить error.message
             const errorData = JSON.parse(error.message);
             console.error('Распарсенные данные:', errorData);
 
             if (errorData.detail) {
-                errorMessage = errorData.detail;
+                if (typeof errorData.detail === 'string') {
+                    errorMessage = errorData.detail;
+                } else if (Array.isArray(errorData.detail)) {
+                    errorMessage = errorData.detail.map(err =>
+                        `${err.loc.join('.')}: ${err.msg}`
+                    ).join(', ');
+                }
             } else {
                 errorMessage = JSON.stringify(errorData);
             }
         } catch {
-            // Если не распарсилось, показываем как есть
             errorMessage = error.message || 'Неизвестная ошибка';
         }
 
