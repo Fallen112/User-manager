@@ -13,11 +13,7 @@ function showNotification(message, type = 'success') {
 
 async function loadUsers() {
     const container = document.getElementById('usersContainer');
-    const spinner = document.getElementById('loadingSpinner');
-
-    spinner.style.display = 'block';
-    container.innerHTML = '';
-    container.appendChild(spinner);
+    container.innerHTML = '<p class="loading">Загрузка...</p>';
 
     try {
         const response = await fetch(`${API_URL}/users/`, {
@@ -27,7 +23,6 @@ async function loadUsers() {
         });
         const users = await response.json();
 
-        spinner.style.display = 'none';
         container.innerHTML = '';
 
         if (users.length === 0) {
@@ -53,7 +48,6 @@ async function loadUsers() {
         `).join('');
 
     } catch (error) {
-        spinner.style.display = 'none';
         container.innerHTML = '<p class="loading">Ошибка загрузки</p>';
         console.error('Error loading users:', error);
     }
