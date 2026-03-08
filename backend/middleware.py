@@ -3,24 +3,22 @@ from functools import wraps
 
 def admin_only(func):
     @wraps(func)
-    async def wrapper(*args, **kwargs):
-        # Получаем текущего пользователя (пока без JWT, просто проверяем)
-        # Для теста будем передавать роль в заголовке X-User-Role
+    def wrapper(*args, **kwargs):
         request = kwargs.get('request')
         if request:
             user_role = request.headers.get('X-User-Role', 'user')
             if user_role != 'admin':
                 raise HTTPException(status_code=403, detail="Admin access required")
-        return await func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 def editor_or_admin(func):
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         request = kwargs.get('request')
         if request:
             user_role = request.headers.get('X-User-Role', 'user')
             if user_role not in ['admin', 'editor']:
                 raise HTTPException(status_code=403, detail="Editor or admin access required")
-        return await func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
