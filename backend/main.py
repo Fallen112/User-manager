@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import uvicorn
@@ -13,7 +14,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="User Manager API")
 
-# Настройка CORS
+# CORS middleware должен быть самым первым и настроен правильно!
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -24,6 +25,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Добавляем middleware для обработки ошибок с CORS-заголовками
+@app.middleware("http")
+async def add_cors_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "https://user-manager-4vdq.onrender.com"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 
 def get_db():
@@ -46,6 +56,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(
         username=user.username,
         email=user.email,
+        password=user.password,  # Добавлено поле password
         age=user.age,
         role=user.role.value  # преобразуем Enum в строку
     )
@@ -87,20 +98,28 @@ def update_user(
         request: Request,
         db: Session = Depends(get_db)
 ):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    try:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-    update_data = user_update.dict(exclude_unset=True)
-    if 'role' in update_data and update_data['role']:
-        update_data['role'] = update_data['role'].value  # преобразуем Enum в строку
+        # Получаем только те поля, которые есть в запросе
+        update_data = user_update.dict(exclude_unset=True)
 
-    for field, value in update_data.items():
-        setattr(user, field, value)
+        # Преобразуем роль из Enum в строку, если она есть
+        if 'role' in update_data and update_data['role'] is not None:
+            update_data['role'] = update_data['role'].value
 
-    db.commit()
-    db.refresh(user)
-    return user
+        # Обновляем только переданные поля
+        for field, value in update_data.items():
+            setattr(user, field, value)
+
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception as e:
+        print(f"Ошибка при обновлении пользователя {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 # ❌ Удалить пользователя (только админ)
@@ -111,13 +130,17 @@ def delete_user(
         request: Request,
         db: Session = Depends(get_db)
 ):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    try:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-    db.delete(user)
-    db.commit()
-    return {"ok": True}
+        db.delete(user)
+        db.commit()
+        return {"ok": True}
+    except Exception as e:
+        print(f"Ошибка при удалении пользователя {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 if __name__ == "__main__":
